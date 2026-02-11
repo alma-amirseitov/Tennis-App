@@ -1,0 +1,231 @@
+# Tennis Platform — Cursor Rules
+
+## Project
+Tennis social platform. Mobile (Expo/RN) + Web Admin (React + Shadcn/UI).
+
+## Mobile App (apps/mobile/)
+
+### Stack
+TypeScript strict, Expo SDK 52+, Expo Router (file-based), TanStack Query, Zustand, React Hook Form + Zod, Axios, react-native-keychain, i18next, react-native-maps
+
+### File Structure
+```
+src/
+├── app/                    — Expo Router pages
+│   ├── (auth)/             — Auth flow (phone, otp, profile, quiz)
+│   ├── (tabs)/             — Main tabs (home, players, events, communities, profile)
+│   ├── event/[id].tsx      — Event detail
+│   ├── community/[id].tsx  — Community detail
+│   ├── player/[id].tsx     — Player profile
+│   └── chat/[id].tsx       — Chat screen
+├── shared/
+│   ├── ui/                 — Reusable components (Button, Input, Card, Avatar, Badge, ...)
+│   ├── hooks/              — Custom hooks (useAuth, useDebounce, ...)
+│   ├── lib/                — Utilities (api client, storage, formatters)
+│   ├── i18n/               — Translations (ru.json, kk.json, en.json)
+│   └── theme/              — Colors, fonts, spacing tokens
+├── features/               — Feature modules
+│   ├── auth/
+│   ├── events/
+│   ├── communities/
+│   ├── chat/
+│   ├── profile/
+│   └── players/
+└── stores/                 — Zustand stores
+```
+
+### Component Pattern
+```tsx
+// Feature component: src/features/events/EventCard.tsx
+import { View, Text, Pressable } from 'react-native';
+import { Card } from '@/shared/ui/Card';
+import { Badge } from '@/shared/ui/Badge';
+import { Event } from '@/shared/types';
+import { useTranslation } from 'react-i18next';
+
+interface EventCardProps {
+  event: Event;
+  onPress: () => void;
+}
+
+export function EventCard({ event, onPress }: EventCardProps) {
+  const { t } = useTranslation();
+  return (
+    <Pressable onPress={onPress}>
+      <Card>
+        <Text style={styles.title}>{event.title}</Text>
+        <Badge label={event.status} />
+      </Card>
+    </Pressable>
+  );
+}
+```
+
+### API Integration Pattern
+```tsx
+// src/features/events/api.ts
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/shared/lib/api';
+import { Event, CreateEventInput } from '@/shared/types';
+
+export const eventKeys = {
+  all: ['events'] as const,
+  list: (filters: EventFilters) => [...eventKeys.all, 'list', filters] as const,
+  detail: (id: string) => [...eventKeys.all, 'detail', id] as const,
+};
+
+export function useEvents(filters: EventFilters) {
+  return useQuery({
+    queryKey: eventKeys.list(filters),
+    queryFn: () => api.get<PaginatedResponse<Event>>('/v1/events', { params: filters }),
+  });
+}
+
+export function useCreateEvent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateEventInput) => api.post<Event>('/v1/events', input),
+    onSuccess: () => qc.invalidateQueries({ queryKey: eventKeys.all }),
+  });
+}
+```
+
+### State Management
+- Server state → TanStack Query (ALWAYS)
+- Auth state → Zustand + react-native-keychain
+- UI state → useState / useReducer (local)
+- Form state → React Hook Form + Zod
+
+### Styling Rules
+- Use StyleSheet.create() for all styles
+- Colors from theme tokens: `import { colors } from '@/shared/theme'`
+- Spacing: 4, 8, 12, 16, 20, 24, 32 (multiples of 4)
+- Border radius: 8 (small), 12 (medium), 16 (large), 24 (pill)
+- Font sizes: 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 28, 32, 36
+- Font weights: 400 (regular), 500 (medium), 600 (semibold), 700 (bold), 800 (extrabold)
+
+### Screen Template
+Every screen must have:
+1. Loading state (skeleton)
+2. Empty state (illustration + message + action)
+3. Error state (message + retry button)
+4. Pull-to-refresh (if list)
+5. i18n for all user-visible strings
+
+```tsx
+export default function EventsScreen() {
+  const { data, isLoading, error, refetch } = useEvents(filters);
+
+  if (isLoading) return <EventsSkeleton />;
+  if (error) return <ErrorState onRetry={refetch} />;
+  if (!data?.length) return <EmptyState message={t('events.empty')} />;
+
+  return (
+    <FlatList
+      data={data}
+      renderItem={({ item }) => <EventCard event={item} />}
+      refreshing={isRefreshing}
+      onRefresh={refetch}
+    />
+  );
+}
+```
+
+### i18n
+```json
+// src/shared/i18n/ru.json
+{
+  "events": {
+    "title": "Ивенты",
+    "empty": "Нет предстоящих ивентов",
+    "create": "Создать ивент",
+    "join": "Записаться",
+    "spots": "{{current}}/{{max}} мест"
+  }
+}
+```
+Always use translation keys, NEVER hardcode Russian text in components.
+
+## Web Admin (apps/web-admin/)
+
+### Stack
+TypeScript strict, React 18+, Vite, React Router v6, Shadcn/UI, Tailwind CSS, TanStack Query + Table, Zustand, React Hook Form + Zod, Recharts
+
+### Structure
+```
+src/
+├── app/
+│   ├── layout.tsx          — Sidebar + header layout
+│   ├── routes.tsx          — React Router config
+│   └── providers.tsx       — QueryClient, auth, theme
+├── pages/
+│   ├── dashboard/
+│   ├── members/
+│   ├── events/
+│   ├── posts/
+│   ├── rating/
+│   └── settings/
+├── shared/
+│   ├── ui/                 — Shadcn/UI components
+│   ├── hooks/
+│   ├── lib/
+│   └── types/
+└── features/
+```
+
+### Shadcn/UI Usage
+```tsx
+import { Button } from '@/shared/ui/button';
+import { Card, CardHeader, CardContent } from '@/shared/ui/card';
+import { DataTable } from '@/shared/ui/data-table';
+```
+
+### Table Pattern
+```tsx
+const columns: ColumnDef<Member>[] = [
+  { accessorKey: 'name', header: 'Имя' },
+  { accessorKey: 'level', header: 'Уровень' },
+  { accessorKey: 'rating', header: 'Рейтинг', cell: ({ row }) => <Badge>{row.original.rating}</Badge> },
+  { id: 'actions', cell: ({ row }) => <MemberActions member={row.original} /> },
+];
+```
+
+## Common Rules (All Frontend)
+
+### Imports Order
+```tsx
+// 1. React/React Native
+import { useState, useEffect } from 'react';
+// 2. Third-party
+import { useQuery } from '@tanstack/react-query';
+// 3. Shared (aliased @/)
+import { Button } from '@/shared/ui/Button';
+// 4. Feature-local
+import { EventCard } from './EventCard';
+// 5. Types
+import type { Event } from '@/shared/types';
+```
+
+### Naming
+- Components: PascalCase (`EventCard.tsx`)
+- Hooks: camelCase, prefix `use` (`useEvents.ts`)
+- Utils: camelCase (`formatDate.ts`)
+- Types: PascalCase (`Event`, `CreateEventInput`)
+- API keys: camelCase arrays (`eventKeys.list()`)
+- i18n keys: dot-notation (`events.create`)
+- Files: PascalCase for components, camelCase for utils/hooks
+
+### Do NOT
+- Do NOT use `any` type (use `unknown` + type guards)
+- Do NOT use inline styles in web (use Tailwind classes)
+- Do NOT fetch in useEffect (use TanStack Query)
+- Do NOT store server data in Zustand (use TanStack Query)
+- Do NOT hardcode strings (use i18n)
+- Do NOT use `console.log` in production code
+- Do NOT create components over 200 lines (split into smaller)
+- Do NOT skip TypeScript errors with @ts-ignore
+
+### Documentation
+Screen specs: `docs/mobile-app/` (10 files) and `docs/web-platform/` (6 files)
+Design tokens: `docs/13-DESIGN-SYSTEM.md`
+API reference: `docs/04-API-SPECIFICATION.md`
