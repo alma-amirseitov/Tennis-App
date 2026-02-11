@@ -1,0 +1,55 @@
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+bin/
+coverage.out
+
+# Dependencies
+vendor/
+
+# Node
+node_modules/
+dist/
+.expo/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Build artifacts
+apps/backend/bin/
+apps/backend/tmp/
+
+# Coverage
+coverage/
+*.lcov
+
+# MinIO data (local)
+minio-data/
+
+# Firebase
+firebase-debug.log
+*-service-account.json
+google-play-key.json

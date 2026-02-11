@@ -13,7 +13,7 @@
 
 ```
 ┌───────────────────────────────────────────────────────────┐
-│                        Clients                             │
+│                        Clients                            │
 ├──────────────┬───────────────┬────────────┬───────────────┤
 │ iOS App      │ Android App   │ Web Admin  │ Web Superadmin│
 │ (Expo/RN)    │ (Expo/RN)     │ (React)    │ (React)       │

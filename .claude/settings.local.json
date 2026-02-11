@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(for dir in apps/mobile apps/web-admin apps/web-superadmin packages/shared-types packages/api-client apps/backend/cmd/server apps/backend/internal/config apps/backend/internal/handler/middleware apps/backend/internal/handler/dto apps/backend/internal/service apps/backend/internal/repository/queries apps/backend/internal/model apps/backend/internal/ws apps/backend/internal/pkg/jwt apps/backend/internal/pkg/sms apps/backend/internal/pkg/firebase apps/backend/internal/pkg/elo apps/backend/internal/pkg/storage apps/backend/internal/pkg/validator apps/backend/migrations apps/backend/scripts/seed)",
+      "Bash(do touch \"$dir/.gitkeep\")",
+      "Bash(done)"
+    ]
+  }
+}
