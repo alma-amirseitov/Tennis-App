@@ -80,6 +80,19 @@ var (
 	ErrSMSRateLimited = &AppError{Code: "SMS_RATE_LIMITED", Status: 429}
 )
 
+// Event errors (400)
+var (
+	ErrEventFull       = &AppError{Code: "EVENT_FULL", Status: 400}
+	ErrEventClosed     = &AppError{Code: "EVENT_CLOSED", Status: 400}
+	ErrEventWrongLevel = &AppError{Code: "LEVEL_MISMATCH", Status: 400}
+)
+
+// File errors (400)
+var (
+	ErrFileTooLarge   = &AppError{Code: "FILE_TOO_LARGE", Status: 400}
+	ErrInvalidFileType = &AppError{Code: "INVALID_FILE_TYPE", Status: 400}
+)
+
 // Server errors (500)
 var (
 	ErrInternal = &AppError{Code: "INTERNAL_ERROR", Status: 500}

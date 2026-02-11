@@ -35,12 +35,27 @@ func NewRouter(logger *slog.Logger, db *pgxpool.Pool, redis *goredis.Client, cfg
 	authService := service.NewAuthService(queries, redis, tokenService, cfg.Environment)
 	quizService := service.NewQuizService(queries)
 
+	// Storage service (optional — may not be configured)
+	storageService, err := service.NewStorageService(
+		cfg.S3Endpoint, cfg.S3AccessKey, cfg.S3SecretKey, cfg.S3Bucket, cfg.S3PublicURL,
+	)
+	if err != nil {
+		logger.Warn("storage service initialization failed, avatar uploads disabled", "error", err)
+	}
+
+	userService := service.NewUserService(queries, storageService)
+	communityService := service.NewCommunityService(queries)
+	eventService := service.NewEventService(queries)
+
 	// Initialize validator
 	v := validator.New()
 
 	// Initialize handlers
 	authHandler := NewAuthHandler(authService, tokenService, v)
 	quizHandler := NewQuizHandler(quizService, v)
+	userHandler := NewUserHandler(userService)
+	communityHandler := NewCommunityHandler(communityService)
+	eventHandler := NewEventHandler(eventService)
 
 	// API v1 routes
 	r.Route("/v1", func(r chi.Router) {
@@ -70,9 +85,58 @@ func NewRouter(logger *slog.Logger, db *pgxpool.Pool, redis *goredis.Client, cfg
 			r.Get("/quiz", quizHandler.GetQuestions)
 			r.Post("/quiz", quizHandler.SubmitAnswers)
 
-			// TODO: Add other protected routes here
-			// Example:
-			// r.Get("/users/me", userHandler.GetMe)
+			// Users
+			r.Route("/users", func(r chi.Router) {
+				r.Get("/me", userHandler.GetMe)
+				r.Patch("/me", userHandler.UpdateMe)
+				r.Post("/me/avatar", userHandler.UploadAvatar)
+				r.Get("/search", userHandler.SearchUsers)
+				r.Get("/{id}", userHandler.GetUser)
+			})
+
+			// Communities
+			r.Route("/communities", func(r chi.Router) {
+				r.Get("/", communityHandler.List)
+				r.Post("/", communityHandler.Create)
+				r.Get("/my", communityHandler.ListMyCommunities)
+
+				r.Route("/{id}", func(r chi.Router) {
+					r.Get("/", communityHandler.GetByID)
+					r.Post("/join", communityHandler.Join)
+					r.Post("/leave", communityHandler.Leave)
+
+					// Members
+					r.Get("/members", communityHandler.ListMembers)
+
+					// Admin routes (owner/admin only)
+					r.Group(func(r chi.Router) {
+						r.Use(middleware.RequireCommunityRole(queries, "owner", "admin"))
+						r.Patch("/members/{userId}", communityHandler.UpdateMemberRole)
+					})
+
+					// Moderator+ routes (owner/admin/moderator)
+					r.Group(func(r chi.Router) {
+						r.Use(middleware.RequireCommunityRole(queries, "owner", "admin", "moderator"))
+						r.Post("/members/{userId}/review", communityHandler.ReviewRequest)
+					})
+				})
+			})
+
+			// Events
+			r.Route("/events", func(r chi.Router) {
+				r.Get("/", eventHandler.List)
+				r.Post("/", eventHandler.Create)
+				r.Get("/calendar", eventHandler.GetCalendar)
+				r.Get("/my", eventHandler.GetMyEvents)
+
+				r.Route("/{id}", func(r chi.Router) {
+					r.Get("/", eventHandler.GetByID)
+					r.Post("/join", eventHandler.Join)
+					r.Post("/leave", eventHandler.Leave)
+					r.Patch("/status", eventHandler.UpdateStatus)
+					r.Get("/participants", eventHandler.ListParticipants)
+				})
+			})
 		})
 	})
 
