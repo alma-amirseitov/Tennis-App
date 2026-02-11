@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 
 	"github.com/alma-amirseitov/Tennis-App/apps/backend/internal/config"
@@ -17,6 +18,9 @@ import (
 )
 
 func main() {
+	// Load .env file (ignore error if not exists)
+	_ = godotenv.Load()
+
 	// Load config
 	cfg, err := config.Load()
 	if err != nil {
@@ -46,7 +50,7 @@ func main() {
 	logger.Info("connected to Redis")
 
 	// Setup router
-	router := handler.NewRouter(logger, db, rdb)
+	router := handler.NewRouter(logger, db, rdb, cfg)
 
 	// Start server
 	srv := &http.Server{

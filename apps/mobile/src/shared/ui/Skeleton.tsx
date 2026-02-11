@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react';
-import { View, Animated, StyleSheet } from 'react-native';
+import { View, Animated, StyleSheet, DimensionValue } from 'react-native';
 import { colors } from '@/shared/theme';
 
 export interface SkeletonProps {
-  width?: number | string;
-  height?: number | string;
+  width?: DimensionValue;
+  height?: DimensionValue;
   radius?: number;
 }
 

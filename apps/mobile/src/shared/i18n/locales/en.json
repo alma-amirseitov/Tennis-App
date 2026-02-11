@@ -66,7 +66,20 @@
     "onboarding_2_desc": "Tournaments, practice sessions and doubles in your community",
     "onboarding_3_title": "Track your rating",
     "onboarding_3_desc": "ELO rating, match stats and achievements",
-    "skip": "Skip"
+    "skip": "Skip",
+    "city_astana": "Astana",
+    "district_esil": "Esil",
+    "district_almaty": "Almaty",
+    "district_saryarka": "Saryarka",
+    "district_baikonur": "Baikonur",
+    "district_nurinsky": "Nurinsky",
+    "select_district": "Select district",
+    "select_year": "Select year",
+    "quiz_subtitle": "Answer 3-5 questions",
+    "quiz_next": "Next",
+    "quiz_progress": "Question {{current}} of {{total}}",
+    "quiz_result_desc": "Your level will be refined as you play",
+    "quiz_start_playing": "Start playing!"
   },
   "home": {
     "title": "Home",

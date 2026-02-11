@@ -26,8 +26,10 @@ export function Button({
   style,
 }: ButtonProps) {
   const isSmall = variant === 'small';
+  const isDisabled = disabled || loading;
 
   const getBackgroundColor = (): string => {
+    if (isDisabled && (variant === 'primary' || variant === 'small')) return '#9BCDB5';
     if (variant === 'primary' || variant === 'small') return colors.primary;
     if (variant === 'secondary') return colors.primaryLight;
     return 'transparent';
@@ -36,24 +38,23 @@ export function Button({
   const getTextColor = (): string => {
     if (variant === 'primary' || variant === 'small') return colors.white;
     if (variant === 'secondary') return colors.primary;
-    if (variant === 'outline') return colors.text;
+    if (variant === 'outline') return isDisabled ? colors.textMuted : colors.text;
     return colors.text;
   };
 
   const getBorderColor = (): string => {
     if (variant === 'secondary') return colors.primary;
-    if (variant === 'outline') return colors.border;
+    if (variant === 'outline') return isDisabled ? colors.borderLight : colors.border;
     return 'transparent';
   };
 
   const containerStyle: ViewStyle = {
     height: isSmall ? HEIGHT_SMALL : HEIGHT_DEFAULT,
-    backgroundColor: variant === 'outline' ? 'transparent' : getBackgroundColor(),
+    backgroundColor: getBackgroundColor(),
     borderRadius: isSmall ? radius.sm : 14,
     borderWidth: variant === 'outline' || variant === 'secondary' ? 2 : 0,
     borderColor: getBorderColor(),
     paddingHorizontal: isSmall ? spacing.base : spacing.xl,
-    opacity: disabled ? 0.5 : 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -68,17 +69,19 @@ export function Button({
   return (
     <Pressable
       onPress={onPress}
-      disabled={disabled || loading}
+      disabled={isDisabled}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: isDisabled }}
       style={({ pressed }) => [
         containerStyle,
-        pressed && !disabled && !loading && { transform: [{ scale: 0.97 }] },
+        pressed && !isDisabled && { transform: [{ scale: 0.97 }] },
         style,
       ]}
     >
       {loading ? (
         <ActivityIndicator
           size="small"
-          color={variant === 'primary' ? colors.white : colors.primary}
+          color={variant === 'primary' || variant === 'small' ? colors.white : colors.primary}
         />
       ) : (
         <>

@@ -22,23 +22,24 @@ export const fontWeight = {
   extrabold: '800' as const,
 };
 
+// React Native expects lineHeight in absolute pixels, not as a multiplier
 export const lineHeight = {
-  tight: 1.2,
-  normal: 1.4,
-  relaxed: 1.6,
+  tight: undefined, // let RN calculate automatically
+  normal: undefined,
+  relaxed: undefined,
 } as const;
 
 export const textStyles = {
-  h1: { fontSize: fontSize['6xl'], fontWeight: fontWeight.extrabold, lineHeight: lineHeight.tight },
-  h2: { fontSize: fontSize['4xl'], fontWeight: fontWeight.bold, lineHeight: lineHeight.tight },
-  h3: { fontSize: fontSize['2xl'], fontWeight: fontWeight.bold, lineHeight: 1.3 },
-  h4: { fontSize: fontSize.xl, fontWeight: fontWeight.semibold, lineHeight: 1.3 },
-  body: { fontSize: fontSize.lg, fontWeight: fontWeight.regular, lineHeight: 1.5 },
-  bodySm: { fontSize: fontSize.md, fontWeight: fontWeight.regular, lineHeight: 1.5 },
-  caption: { fontSize: fontSize.sm, fontWeight: fontWeight.medium, lineHeight: 1.4 },
-  rating: { fontSize: fontSize['8xl'], fontWeight: fontWeight.extrabold },
-  badge: { fontSize: fontSize.sm, fontWeight: fontWeight.semibold },
-  tab: { fontSize: fontSize.xs, fontWeight: fontWeight.medium },
-  button: { fontSize: 17, fontWeight: fontWeight.bold },
-  buttonSm: { fontSize: fontSize.md, fontWeight: fontWeight.semibold },
+  h1: { fontSize: fontSize['6xl'], fontWeight: fontWeight.extrabold, lineHeight: Math.round(fontSize['6xl'] * 1.2) },
+  h2: { fontSize: fontSize['4xl'], fontWeight: fontWeight.bold, lineHeight: Math.round(fontSize['4xl'] * 1.2) },
+  h3: { fontSize: fontSize['2xl'], fontWeight: fontWeight.bold, lineHeight: Math.round(fontSize['2xl'] * 1.3) },
+  h4: { fontSize: fontSize.xl, fontWeight: fontWeight.semibold, lineHeight: Math.round(fontSize.xl * 1.3) },
+  body: { fontSize: fontSize.lg, fontWeight: fontWeight.regular, lineHeight: Math.round(fontSize.lg * 1.5) },
+  bodySm: { fontSize: fontSize.md, fontWeight: fontWeight.regular, lineHeight: Math.round(fontSize.md * 1.5) },
+  caption: { fontSize: fontSize.sm, fontWeight: fontWeight.medium, lineHeight: Math.round(fontSize.sm * 1.4) },
+  rating: { fontSize: fontSize['8xl'], fontWeight: fontWeight.extrabold, lineHeight: Math.round(fontSize['8xl'] * 1.2) },
+  badge: { fontSize: fontSize.sm, fontWeight: fontWeight.semibold, lineHeight: Math.round(fontSize.sm * 1.4) },
+  tab: { fontSize: fontSize.xs, fontWeight: fontWeight.medium, lineHeight: Math.round(fontSize.xs * 1.4) },
+  button: { fontSize: 17, fontWeight: fontWeight.bold, lineHeight: Math.round(17 * 1.3) },
+  buttonSm: { fontSize: fontSize.md, fontWeight: fontWeight.semibold, lineHeight: Math.round(fontSize.md * 1.3) },
 } as const;

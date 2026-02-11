@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet, Platform } from 'react-native';
 import { colors } from '@/shared/theme/colors';
 
 function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
@@ -27,6 +27,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: t('tabs.home'),
+          tabBarLabel: t('tabs.home'),
           tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" focused={focused} />,
         }}
       />
@@ -34,6 +35,7 @@ export default function TabsLayout() {
         name="players"
         options={{
           title: t('tabs.players'),
+          tabBarLabel: t('tabs.players'),
           tabBarIcon: ({ focused }) => <TabIcon emoji="👥" focused={focused} />,
         }}
       />
@@ -41,6 +43,7 @@ export default function TabsLayout() {
         name="events"
         options={{
           title: t('tabs.events'),
+          tabBarLabel: t('tabs.events'),
           tabBarIcon: ({ focused }) => <TabIcon emoji="🎾" focused={focused} />,
         }}
       />
@@ -48,6 +51,7 @@ export default function TabsLayout() {
         name="communities"
         options={{
           title: t('tabs.communities'),
+          tabBarLabel: t('tabs.communities'),
           tabBarIcon: ({ focused }) => <TabIcon emoji="🏛" focused={focused} />,
         }}
       />
@@ -55,6 +59,7 @@ export default function TabsLayout() {
         name="profile"
         options={{
           title: t('tabs.profile'),
+          tabBarLabel: t('tabs.profile'),
           tabBarIcon: ({ focused }) => <TabIcon emoji="👤" focused={focused} />,
         }}
       />
@@ -64,7 +69,9 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    height: 80,
+    height: Platform.OS === 'ios' ? 88 : 64,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 8,
+    paddingTop: 8,
     backgroundColor: colors.card,
     borderTopColor: colors.borderLight,
     borderTopWidth: 1,
@@ -77,7 +84,8 @@ const styles = StyleSheet.create({
     opacity: 1,
   },
   tabLabel: {
-    fontSize: 10,
-    fontWeight: '500',
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 2,
   },
 });

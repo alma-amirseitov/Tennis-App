@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { colors, typography, spacing } from '@/shared/theme';
 
 export default function HomeScreen() {
   const { t } = useTranslation();
@@ -16,11 +17,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FAFBFC',
+    backgroundColor: colors.background,
+    padding: spacing.xl,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1A1D21',
+    ...typography.textStyles.h3,
+    color: colors.text,
   },
 });

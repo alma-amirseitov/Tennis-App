@@ -66,7 +66,20 @@
     "onboarding_2_desc": "Турниры, тренировки и парные игры в вашем сообществе",
     "onboarding_3_title": "Следите за рейтингом",
     "onboarding_3_desc": "ELO-рейтинг, статистика матчей и достижения",
-    "skip": "Пропустить"
+    "skip": "Пропустить",
+    "city_astana": "Астана",
+    "district_esil": "Есіл",
+    "district_almaty": "Алматы",
+    "district_saryarka": "Сарыарқа",
+    "district_baikonur": "Байқоңыр",
+    "district_nurinsky": "Нұринский",
+    "select_district": "Районды таңдаңыз",
+    "select_year": "Жылды таңдаңыз",
+    "quiz_subtitle": "3-5 сұраққа жауап беріңіз",
+    "quiz_next": "Келесі",
+    "quiz_progress": "{{current}}/{{total}} сұрақ",
+    "quiz_result_desc": "Деңгей ойнаған сайын нақтыланады",
+    "quiz_start_playing": "Ойнауды бастау!"
   },
   "home": {
     "title": "Главная",
