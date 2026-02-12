@@ -14,6 +14,7 @@ import (
 	"github.com/alma-amirseitov/Tennis-App/apps/backend/internal/pkg/validator"
 	"github.com/alma-amirseitov/Tennis-App/apps/backend/internal/repository"
 	"github.com/alma-amirseitov/Tennis-App/apps/backend/internal/service"
+	"github.com/alma-amirseitov/Tennis-App/apps/backend/internal/ws"
 )
 
 func NewRouter(logger *slog.Logger, db *pgxpool.Pool, redis *goredis.Client, cfg *config.Config) *chi.Mux {
@@ -47,6 +48,15 @@ func NewRouter(logger *slog.Logger, db *pgxpool.Pool, redis *goredis.Client, cfg
 	communityService := service.NewCommunityService(queries)
 	eventService := service.NewEventService(queries)
 
+	// Notifications + Firebase (mock in development)
+	firebaseService := service.NewFirebaseService(logger, cfg)
+	notificationService := service.NewNotificationService(queries, logger, firebaseService)
+
+	// Core domain services
+	matchService := service.NewMatchService(queries, db, notificationService)
+	ratingService := service.NewRatingService(queries)
+	chatService := service.NewChatService(queries)
+
 	// Initialize validator
 	v := validator.New()
 
@@ -56,6 +66,15 @@ func NewRouter(logger *slog.Logger, db *pgxpool.Pool, redis *goredis.Client, cfg
 	userHandler := NewUserHandler(userService)
 	communityHandler := NewCommunityHandler(communityService)
 	eventHandler := NewEventHandler(eventService)
+	matchHandler := NewMatchHandler(matchService)
+	ratingHandler := NewRatingHandler(ratingService)
+	chatHandler := NewChatHandler(chatService)
+	notificationHandler := NewNotificationHandler(notificationService)
+
+	// WebSocket hub and handler (chat)
+	hub := ws.NewHub(redis)
+	go hub.Run()
+	wsHandler := ws.NewHandler(hub, chatService, tokenService, redis)
 
 	// API v1 routes
 	r.Route("/v1", func(r chi.Router) {
@@ -137,8 +156,54 @@ func NewRouter(logger *slog.Logger, db *pgxpool.Pool, redis *goredis.Client, cfg
 					r.Get("/participants", eventHandler.ListParticipants)
 				})
 			})
+
+			// Matches
+			r.Route("/matches", func(r chi.Router) {
+				r.Get("/my", matchHandler.ListMyMatches)
+
+				r.Route("/{id}", func(r chi.Router) {
+					r.Get("/", matchHandler.GetByID)
+					r.Post("/result", matchHandler.SubmitResult)
+					r.Post("/confirm", matchHandler.ConfirmResult)
+					r.Post("/admin-confirm", matchHandler.AdminConfirm)
+				})
+			})
+
+			// Rating
+			r.Route("/rating", func(r chi.Router) {
+				r.Get("/global", ratingHandler.GetGlobalLeaderboard)
+				r.Get("/me", ratingHandler.GetMyRating)
+				r.Get("/history", ratingHandler.GetRatingHistory)
+				r.Get("/stats", ratingHandler.GetMyStats)
+				r.Get("/community/{id}", ratingHandler.GetCommunityLeaderboard)
+			})
+
+			// Chat
+			r.Route("/chats", func(r chi.Router) {
+				r.Get("/", chatHandler.ListChats)
+				r.Post("/personal", chatHandler.CreatePersonalChat)
+				r.Get("/unread-count", chatHandler.GetUnreadCount)
+
+				r.Route("/{id}", func(r chi.Router) {
+					r.Get("/messages", chatHandler.GetMessages)
+					r.Post("/messages", chatHandler.SendMessage)
+					r.Post("/read", chatHandler.MarkAsRead)
+					r.Patch("/mute", chatHandler.UpdateMuted)
+				})
+			})
+
+			// Notifications
+			r.Route("/notifications", func(r chi.Router) {
+				r.Get("/", notificationHandler.List)
+				r.Post("/read", notificationHandler.MarkRead)
+				r.Get("/unread-count", notificationHandler.GetUnreadCount)
+				r.Delete("/{id}", notificationHandler.Delete)
+			})
 		})
 	})
+
+	// WebSocket endpoint (chat)
+	r.Handle("/ws", wsHandler)
 
 	return r
 }

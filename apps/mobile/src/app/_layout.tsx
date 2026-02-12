@@ -29,6 +29,9 @@ export default function RootLayout() {
             <Stack.Screen name="event/create" />
             <Stack.Screen name="community/[id]" />
             <Stack.Screen name="community/create" />
+            <Stack.Screen name="chat" options={{ headerShown: false }} />
+            <Stack.Screen name="match/[id]/submit-result" />
+            <Stack.Screen name="match/[id]/confirm-result" />
           </Stack>
         </QueryClientProvider>
       </SafeAreaView>

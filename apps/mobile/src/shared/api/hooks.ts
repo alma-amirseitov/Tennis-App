@@ -8,6 +8,9 @@ import {
   createCommunity, joinCommunity, leaveCommunity,
 } from './communities';
 import type { CommunitySearchParams, CreateCommunityRequest, MemberRole } from './communities';
+import { getMatch, submitMatchResult, confirmMatchResult } from './matches';
+import type { SubmitResultRequest, ConfirmResultRequest } from './matches';
+import { getChats, getMessages, sendMessage, markChatRead, getUnreadCount } from './chat';
 
 /* ── Profile ── */
 export function useProfile() {
@@ -142,4 +145,87 @@ export function useLeaveCommunity() {
       qc.invalidateQueries({ queryKey: ['community'] });
     },
   });
+}
+
+/* ── Matches ── */
+export function useMatch(id: string) {
+  return useQuery({ queryKey: ['match', id], queryFn: () => getMatch(id), enabled: !!id });
+}
+
+export function useSubmitMatchResult() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ matchId, data }: { matchId: string; data: SubmitResultRequest }) =>
+      submitMatchResult(matchId, data),
+    onSuccess: (_, { matchId }) => qc.invalidateQueries({ queryKey: ['match', matchId] }),
+  });
+}
+
+export function useConfirmMatchResult() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ matchId, data }: { matchId: string; data: ConfirmResultRequest }) =>
+      confirmMatchResult(matchId, data),
+    onSuccess: (_, { matchId }) => {
+      qc.invalidateQueries({ queryKey: ['match', matchId] });
+      qc.invalidateQueries({ queryKey: ['profile'] });
+    },
+  });
+}
+
+/* ── Chat ── */
+export function useChats() {
+  return useQuery({ queryKey: ['chats'], queryFn: getChats, staleTime: 30_000 });
+}
+
+export function useChatMessages(chatId: string, params?: { before?: string; limit?: number }) {
+  return useQuery({
+    queryKey: ['chat-messages', chatId, params],
+    queryFn: () => getMessages(chatId, params),
+    enabled: !!chatId,
+    staleTime: 10_000,
+  });
+}
+
+export function useChatMessagesInfinite(chatId: string, limit = 50) {
+  return useInfiniteQuery({
+    queryKey: ['chat-messages-infinite', chatId],
+    queryFn: ({ pageParam }: { pageParam?: string }) =>
+      getMessages(chatId, { before: pageParam, limit }),
+    getNextPageParam: (last) => {
+      if (!last.has_more || last.data.length === 0) return undefined;
+      return last.data[last.data.length - 1]?.id;
+    },
+    initialPageParam: undefined as string | undefined,
+    enabled: !!chatId,
+    staleTime: 10_000,
+  });
+}
+
+export function useSendMessage() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ chatId, content, replyToId }: { chatId: string; content: string; replyToId?: string | null }) =>
+      sendMessage(chatId, content, replyToId),
+    onSuccess: (msg, { chatId }) => {
+      qc.invalidateQueries({ queryKey: ['chat-messages', chatId] });
+      qc.invalidateQueries({ queryKey: ['chat-messages-infinite', chatId] });
+      qc.invalidateQueries({ queryKey: ['chats'] });
+    },
+  });
+}
+
+export function useMarkChatRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ chatId, lastReadAt }: { chatId: string; lastReadAt: string }) =>
+      markChatRead(chatId, lastReadAt),
+    onSuccess: (_, { chatId }) => {
+      qc.invalidateQueries({ queryKey: ['chats'] });
+    },
+  });
+}
+
+export function useUnreadCount() {
+  return useQuery({ queryKey: ['chats-unread'], queryFn: getUnreadCount, staleTime: 30_000 });
 }

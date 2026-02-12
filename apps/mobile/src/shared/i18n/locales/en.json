@@ -203,7 +203,11 @@
     "delivered": "Delivered",
     "empty": "No chats",
     "mute": "Mute notifications",
-    "unmute": "Unmute notifications"
+    "unmute": "Unmute notifications",
+    "tab_personal": "Personal",
+    "tab_groups": "Groups",
+    "tab_events": "Events",
+    "search_placeholder": "Search..."
   },
   "notifications": {
     "title": "Notifications",

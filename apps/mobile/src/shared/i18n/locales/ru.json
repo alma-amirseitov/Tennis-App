@@ -203,7 +203,11 @@
     "delivered": "Доставлено",
     "empty": "Нет чатов",
     "mute": "Отключить уведомления",
-    "unmute": "Включить уведомления"
+    "unmute": "Включить уведомления",
+    "tab_personal": "Личные",
+    "tab_groups": "Группы",
+    "tab_events": "Ивенты",
+    "search_placeholder": "Поиск..."
   },
   "notifications": {
     "title": "Уведомления",
